@@ -127,12 +127,12 @@ class HeartAttackRiskPredictor:
             'XGBoost': xgb.XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=123)
         }
 
-        # # Hyperparameter tuning for SVM as an example
-        # svm_param_grid = {
-        #     'C': [0.1, 1, 10],
-        #     'gamma': ['scale', 'auto']
-        # }
-        # models['SVM'] = self.tune_model(models['SVM'], svm_param_grid, "SVM")
+        # Hyperparameter tuning for SVM as an example
+        svm_param_grid = {
+            'C': [0.1, 1, 10],
+            'gamma': ['scale', 'auto']
+        }
+        models['SVM'] = self.tune_model(models['SVM'], svm_param_grid, "SVM")
 
         # Optionally, hyperparameter tuning can be added for other models as well
 
@@ -227,6 +227,83 @@ class HeartAttackRiskPredictor:
         plt.close()
 
         return cum_exp_var_ratio
+
+
+def visualize_decision_tree(predictor, max_depth=3):
+    """
+    Visualize a single decision tree from the predictor's Decision Tree model.
+
+    Parameters:
+    -----------
+    predictor : HeartAttackRiskPredictor
+        The predictor instance containing the trained Decision Tree model
+    max_depth : int, optional (default=3)
+        Maximum depth of the tree to visualize for clarity
+
+    Returns:
+    --------
+    None : Saves the tree visualization to 'images/decision_tree.png'
+    """
+    import graphviz
+    from sklearn.tree import export_graphviz
+    import os
+
+    # Get the trained decision tree model
+    if 'Decision Tree' not in predictor.models:
+        raise ValueError("Decision Tree model not found in predictor's models")
+
+    tree_model = predictor.models['Decision Tree']
+
+    # Create a new decision tree with limited depth for visualization
+    tree_model_viz = DecisionTreeClassifier(
+        max_depth=max_depth,
+        random_state=315
+    )
+    tree_model_viz.fit(predictor.X_train, predictor.y_train)
+
+    # Get feature names
+    feature_names = predictor.X.columns.tolist()
+
+    # Define class names
+    class_names = ['Low Risk', 'Medium Risk', 'High Risk']
+
+    # Create dot data
+    dot_data = export_graphviz(
+        tree_model_viz,
+        out_file=None,
+        feature_names=feature_names,
+        class_names=class_names,
+        filled=True,
+        rounded=True,
+        special_characters=True,
+        max_depth=max_depth
+    )
+
+    # Create graph
+    graph = graphviz.Source(dot_data)
+
+    # Ensure images directory exists
+    os.makedirs('images', exist_ok=True)
+
+    # Save visualization
+    graph.render('images/decision_tree', format='png', cleanup=True)
+
+    print(f"Decision tree visualization saved as 'images/decision_tree.png'")
+
+    # Print feature importance for the visualized tree
+    feature_importance = pd.DataFrame({
+        'feature': feature_names,
+        'importance': tree_model_viz.feature_importances_
+    }).sort_values('importance', ascending=False)
+
+    print("\nTop 5 most important features in this tree:")
+    print(feature_importance.head().to_string())
+
+# # Example usage:
+# predictor = HeartAttackRiskPredictor('heart_attack_risk_dataset.csv')
+# predictor.load_and_preprocess_data()
+# predictor.train_models()
+# visualize_decision_tree(predictor, max_depth=3)
 
 
 # Example usage
