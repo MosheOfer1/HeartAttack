@@ -248,11 +248,11 @@ def visualize_decision_tree(predictor, max_depth=3):
     from sklearn.tree import export_graphviz
     import os
 
-    # Get the trained decision tree model
-    if 'Decision Tree' not in predictor.models:
-        raise ValueError("Decision Tree model not found in predictor's models")
-
-    tree_model = predictor.models['Decision Tree']
+    # # Get the trained decision tree model
+    # if 'Decision Tree' not in predictor.models:
+    #     raise ValueError("Decision Tree model not found in predictor's models")
+    #
+    # tree_model = predictor.models['Decision Tree']
 
     # Create a new decision tree with limited depth for visualization
     tree_model_viz = DecisionTreeClassifier(
@@ -302,8 +302,8 @@ def visualize_decision_tree(predictor, max_depth=3):
 # # Example usage:
 # predictor = HeartAttackRiskPredictor('heart_attack_risk_dataset.csv')
 # predictor.load_and_preprocess_data()
-# predictor.train_models()
-# visualize_decision_tree(predictor, max_depth=3)
+# # predictor.train_models()
+# visualize_decision_tree(predictor, max_depth=4)
 
 
 # Example usage
